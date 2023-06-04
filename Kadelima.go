@@ -146,41 +146,6 @@ func (s *Bucket) printBucketContents() {
 	}
 }
 
-// testInsert 测试插入
-func testInsert() {
-	var strs []string
-	for len(strs) < 101 {
-		max := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 160), big.NewInt(1))
-		// 生成一个160位的随机二进制字符串
-		num, _ := rand.Int(rand.Reader, max)
-		str := fmt.Sprintf("%0160b", num)
-
-		// 检查这个二进制字符串是否已经存在
-		if !isDuplicate(str, strs) {
-			strs = append(strs, str)
-		}
-	}
-
-	node := Node{nodeID: strs[0]}
-	fmt.Println("节点ID为 ", node.nodeID)
-	for i, v := range strs {
-
-		if i == 0 {
-			continue
-		}
-		node.InsertNode(v)
-	}
-
-	for i, v := range node.buckets {
-		if v == nil {
-			continue
-		}
-		fmt.Printf("桶编号为 %d \n", i)
-		v.printBucketContents()
-		fmt.Println("")
-	}
-}
-
 // SetValue 插入值
 func (s *Node) SetValue(key string, value []byte) bool {
 	hash := sha1.Sum(value)
@@ -497,6 +462,5 @@ func testValue() {
 
 func main() {
 	nodesMap = make(map[string]*Node)
-	// testInsert()
 	testValue()
 }
