@@ -21,7 +21,7 @@ type Bucket struct {
 	ids []string
 }
 
-var nodesMap map[string]*Node
+var nodesMap = make(map[string]*Node)
 
 var SetNodes []string
 var GetNodes []string
@@ -123,8 +123,8 @@ func findBucket(selfId, targetId string) int {
 	return 160 - len(fmt.Sprintf("%b", result))
 }
 
-// isDuplicate 查看是否有相同的元素
-func isDuplicate(str string, strs []string) bool {
+// isEqual 查看是否有相同的元素
+func isEqual(str string, strs []string) bool {
 	// 将二进制字符串转换为大整数类型
 	num := new(big.Int)
 	num.SetString(str, 2)
@@ -137,6 +137,61 @@ func isDuplicate(str string, strs []string) bool {
 		}
 	}
 	return false
+}
+
+// isUpdated 更新
+func isUpdated(targetValue string, nodes []string, compare string) int {
+	targetBinary := new(big.Int)
+	targetBinary.SetString(targetValue, 2)
+	compareBinary := new(big.Int)
+	compareBinary.SetString(compare, 2)
+	minValue := compareGetMin(targetValue, nodes[0], nodes[1])
+	if minValue == nodes[0] {
+		maxValueBinary := new(big.Int)
+		maxValueBinary.SetString(nodes[1], 2)
+		resultMaxValue := new(big.Int)
+		resultMaxValue.Xor(targetBinary, maxValueBinary)
+		resultCom := new(big.Int)
+		resultCom.Xor(targetBinary, compareBinary)
+		if resultCom.Cmp(resultMaxValue) < 0 {
+			return 1
+		}
+	} else {
+		maxValueBinary := new(big.Int)
+		maxValueBinary.SetString(nodes[0], 2)
+		resultMaxValue := new(big.Int)
+		resultMaxValue.Xor(targetBinary, maxValueBinary)
+		resultCom := new(big.Int)
+		resultCom.Xor(targetBinary, compareBinary)
+		if resultCom.Cmp(resultMaxValue) < 0 {
+			return 0
+		}
+	}
+	return -1
+}
+
+// checkLen 检查节点间距离
+func checkLen(len int) (int, int) {
+	if len > 2 {
+		return GetRandom()
+	} else if len == 2 {
+		return 0, 1
+	} else {
+		return 0, -1
+	}
+}
+
+// inverse 反转
+func inverse(value string) string {
+	byteArray := []byte(value)
+	for i, v := range byteArray {
+		if v == '0' {
+			byteArray[i] = '1'
+		} else {
+			byteArray[i] = '0'
+		}
+	}
+	return string(byteArray)
 }
 
 // printBucketContents 打印桶中的id
@@ -313,61 +368,6 @@ func (s *Node) GetValue(key string) []byte {
 	}
 }
 
-// checkLen 检查节点间距离
-func checkLen(len int) (int, int) {
-	if len > 2 {
-		return GetRandom()
-	} else if len == 2 {
-		return 0, 1
-	} else {
-		return 0, -1
-	}
-}
-
-// isUpdated 更新
-func isUpdated(targetValue string, nodes []string, compare string) int {
-	targetBinary := new(big.Int)
-	targetBinary.SetString(targetValue, 2)
-	compareBinary := new(big.Int)
-	compareBinary.SetString(compare, 2)
-	minValue := compareGetMin(targetValue, nodes[0], nodes[1])
-	if minValue == nodes[0] {
-		maxValueBinary := new(big.Int)
-		maxValueBinary.SetString(nodes[1], 2)
-		resultMaxValue := new(big.Int)
-		resultMaxValue.Xor(targetBinary, maxValueBinary)
-		resultCom := new(big.Int)
-		resultCom.Xor(targetBinary, compareBinary)
-		if resultCom.Cmp(resultMaxValue) < 0 {
-			return 1
-		}
-	} else {
-		maxValueBinary := new(big.Int)
-		maxValueBinary.SetString(nodes[0], 2)
-		resultMaxValue := new(big.Int)
-		resultMaxValue.Xor(targetBinary, maxValueBinary)
-		resultCom := new(big.Int)
-		resultCom.Xor(targetBinary, compareBinary)
-		if resultCom.Cmp(resultMaxValue) < 0 {
-			return 0
-		}
-	}
-	return -1
-}
-
-// inverse 反转
-func inverse(value string) string {
-	byteArray := []byte(value)
-	for i, v := range byteArray {
-		if v == '0' {
-			byteArray[i] = '1'
-		} else {
-			byteArray[i] = '0'
-		}
-	}
-	return string(byteArray)
-}
-
 // testValue 测试值
 func testValue() {
 	// 生成100个节点,并完成网络的构建
@@ -378,7 +378,7 @@ func testValue() {
 		num, _ := rand.Int(rand.Reader, max)
 		str := fmt.Sprintf("%0160b", num)
 		// 检查这个二进制字符串是否已经存在
-		if !isDuplicate(str, strs) {
+		if !isEqual(str, strs) {
 			strs = append(strs, str)
 		}
 	}
